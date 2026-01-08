@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"context"
+
 	"github.com/cyriljohn147/zero-trust-backend/internal/db"
 	"github.com/gin-gonic/gin"
 )
@@ -18,4 +20,5 @@ func main() {
 	})
 
 	log.Fatal(r.Run(":8080"))
+	_ = context.Background()
 }
