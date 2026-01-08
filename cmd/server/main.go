@@ -3,8 +3,7 @@ package main
 import (
 	"log"
 
-	"context"
-
+	"github.com/cyriljohn147/zero-trust-backend/internal/api"
 	"github.com/cyriljohn147/zero-trust-backend/internal/db"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +18,7 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	r.POST("/devices/register", api.RegisterDeviceHandler)
+
 	log.Fatal(r.Run(":8080"))
-	_ = context.Background()
 }
