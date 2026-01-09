@@ -19,6 +19,8 @@ func main() {
 	})
 
 	r.POST("/devices/register", api.RegisterDeviceHandler)
+	r.POST("/auth/challenge", api.GenerateChallengeHandler)
+	r.POST("/auth/verify", api.VerifyChallengeHandler)
 
 	log.Fatal(r.Run(":8080"))
 }
