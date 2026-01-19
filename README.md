@@ -111,22 +111,104 @@ zero-trust-backend/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Go 1.21+
+- Go 1.25+
+- PostgreSQL
+- OpenSSL (for testing)
 - Git
 
-### Setup
+### Environment Setup
+1. **Create `.env` file:**
 ```bash
-git clone https://github.com/<your-username>/zero-trust-backend.git
-cd zero-trust-backend
+DATABASE_URL="postgres://user:password@localhost:5432/zerotrust?sslmode=disable"
+```
+
+2. **Initialize database:**
+```bash
+psql -d zerotrust -f migrations/001_init.sql
+```
+
+3. **Create a test user:**
+```bash
+psql -d zerotrust -c "INSERT INTO users (username, email, password_hash, role) VALUES ('testuser', 'test@example.com', 'hash', 'customer');"
+```
+
+### Running the Server
+```bash
 go mod tidy
 go run cmd/server/main.go
 ```
 
-Test health endpoint:
+Server starts on `http://localhost:8080`
 
+### API Testing
+
+**1. Register Device**
+```bash
+curl -X POST http://localhost:8080/devices/register \
+  -H "Content-Type: application/json" \
+  -d '{"public_key":"YOUR_BASE64_PUBLIC_KEY"}'
+```
+Response: `{"device_id":"<uuid>"}`
+
+**2. Request Challenge**
+```bash
+curl -X POST http://localhost:8080/auth/challenge \
+  -H "Content-Type: application/json" \
+  -d '{"device_id":"<device_id>"}'
+```
+Response: `{"challenge":"<base64>","challenge_id":"<uuid>","expires_at":"<time>"}`
+
+**3. Verify Challenge (Sign & Authenticate)**
+```bash
+# Decode challenge
+echo "<challenge>" | base64 --decode > challenge.bin
+
+# Sign with private key
+openssl pkeyutl -sign -inkey device_private.pem -rawin -in challenge.bin | base64 > signature.txt
+
+# Verify
+curl -X POST http://localhost:8080/auth/verify \
+  -H "Content-Type: application/json" \
+  -d '{"challenge_id":"<challenge_id>","signature":"<signature>"}'
+```
+Response: `{"access_token":"<jwt>"}`
+
+**4. Test Health Endpoint**
 ```bash
 curl http://localhost:8080/health
 ```
+
+⸻
+
+## 🔧 Device Client Integration
+
+To automate the authentication process in your application:
+
+```go
+type DeviceClient struct {
+    privateKey *ed25519.PrivateKey
+    deviceID   uuid.UUID
+    baseURL    string
+}
+
+// Authenticate automatically handles challenge-response
+func (dc *DeviceClient) Authenticate() (string, error) {
+    // 1. Request challenge
+    challenge, challengeID := dc.requestChallenge()
+    
+    // 2. Sign challenge
+    challengeBytes, _ := base64.StdEncoding.DecodeString(challenge)
+    signature := ed25519.Sign(dc.privateKey, challengeBytes)
+    
+    // 3. Verify and get token
+    return dc.verifyChallenge(challengeID, base64.StdEncoding.EncodeToString(signature))
+}
+```
+
+Every API request would then automatically:
+1. Call `Authenticate()` to get a fresh token
+2. Add `Authorization: Bearer <token>` header
+3. Execute the request
 
 ⸻
 
@@ -135,6 +217,7 @@ curl http://localhost:8080/health
 	•	Token expiration enforcement
 	•	Resistance to replay attacks
 	•	Device revocation effectiveness
+	•	Challenge-response cryptographic strength
 
 ⸻
 
