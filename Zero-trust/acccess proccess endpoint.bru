@@ -1,0 +1,20 @@
+meta {
+  name: acccess proccess endpoint
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/secure-data
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{ACCESS_TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

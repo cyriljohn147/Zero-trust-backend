@@ -1,0 +1,28 @@
+meta {
+  name: Request challenge
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/auth/challenge
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "device_id": "{{DEVICE_ID}}"
+  }
+  
+}
+
+script:post-response {
+  bru.setEnvVar("CHALLENGE", res.body.challenge)
+  bru.setEnvVar("CHALLENGE_ID", res.body.challenge_id)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

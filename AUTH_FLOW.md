@@ -60,32 +60,27 @@ Save `challenge` and `challenge_id`.
 
 ## Step 4: Sign the Challenge
 
-Option A: Use Python script (recommended):
+Option A: Use Python script Manual:
 
 ```bash
-python3 sign_challenge.py "EuRj1+vOQTBoKtxzCvOlo+wP+QZxI+V+2SWgKteKpb4="
+python3 sign_challenge.py "$CHALLENGE"
 ```
 
-Option B: Manual process:
+Option B: Manual process(Recommended):
 
 ```bash
 CHALLENGE="EuRj1+vOQTBoKtxzCvOlo+wP+QZxI+V+2SWgKteKpb4="
 
-echo "$CHALLENGE" | base64 -d > challenge.bin
+curl -X POST http://localhost:8080/auth//sign \
+  -H "Content-Type: application/json" \
+  -d "{\"challenge\": \"$CHALLENGE\"}"
+```
 
-python3 << 'EOF'
-import base64
-from cryptography.hazmat.primitives import serialization
-
-with open('private_key.pem', 'rb') as f:
-    private_key = serialization.load_pem_private_key(f.read(), password=None)
-
-with open('challenge.bin', 'rb') as f:
-    challenge = f.read()
-
-signature = private_key.sign(challenge)
-print(base64.b64encode(signature).decode())
-EOF
+**Response:**
+```json
+{
+  "signature":"rwR+c9dXBFR2yewepnZjES7TepvFWJHCeULf1nB/Cx4I5qRQzn+85y+wA0vcqkK+jOvf8SwSWdTGVrdKHNBYCA=="
+}
 ```
 
 **Output:** Base64-encoded signature
@@ -93,7 +88,6 @@ EOF
 ## Step 5: Verify Challenge & Get Token
 
 ```bash
-CHALLENGE_ID="77ca81a9-875f-4830-9757-ac0a98109a8f"
 SIGNATURE="rwR+c9dXBFR2yewepnZjES7TepvFWJHCeULf1nB/Cx4I5qRQzn+85y+wA0vcqkK+jOvf8SwSWdTGVrdKHNBYCA=="
 
 curl -X POST http://localhost:8080/auth/verify \

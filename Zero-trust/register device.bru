@@ -1,0 +1,27 @@
+meta {
+  name: register device
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/devices/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "user_id": 1,
+    "public_key": "vbiM31ERtJSDWYy1miAyfj263+zaXjbG/YGzpeiwOA8="
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("DEVICE_ID", res.body.device_id)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

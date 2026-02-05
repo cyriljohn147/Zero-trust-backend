@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Zero-trust",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
