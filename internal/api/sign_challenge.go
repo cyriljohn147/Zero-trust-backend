@@ -19,9 +19,17 @@ func SignChallengeHandler(c *gin.Context) {
 		return
 	}
 
-	out, err := exec.Command("python3", "sign_challenge.py", req.Challenge).Output()
+	cmd := exec.Command(
+		"/Users/cyriljohn147/Documents/coding/zero-trust-backend/venv/bin/python",
+		"/Users/cyriljohn147/Documents/coding/zero-trust-backend/sign_challenge.py",
+		req.Challenge,
+	)
+
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "signing failed"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": string(out), // shows real python error if any
+		})
 		return
 	}
 

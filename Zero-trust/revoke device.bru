@@ -1,0 +1,22 @@
+meta {
+  name: revoke device
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/devices/revoke
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "device_id":"{{DEVICE_ID}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

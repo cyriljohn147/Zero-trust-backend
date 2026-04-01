@@ -6,6 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+
+	"github.com/cyriljohn147/zero-trust-backend/internal/db"
 )
 
 func ZeroTrustMiddleware() gin.HandlerFunc {
@@ -40,6 +43,20 @@ func ZeroTrustMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(*Claims)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims"})
+			return
+		}
+
+		// 🔥 ADD THIS BLOCK (REVOCATION CHECK)
+		deviceID, err := uuid.Parse(claims.DeviceID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid device ID"})
+			return
+		}
+		device, err := db.GetDeviceByDeviceID(c.Request.Context(), deviceID)
+		if err != nil || device.Status != "active" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error": "device revoked or inactive",
+			})
 			return
 		}
 

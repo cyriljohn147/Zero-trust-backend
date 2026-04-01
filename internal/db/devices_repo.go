@@ -87,10 +87,6 @@ func RevokeDevice(ctx context.Context, deviceID uuid.UUID) error {
 		WHERE device_id = $1
 	`
 
-	cmd, err := Pool.Exec(ctx, query, deviceID)
-	if err != nil || cmd.RowsAffected() == 0 {
-		return ErrDeviceNotFound
-	}
-
-	return nil
+	_, err := Pool.Exec(ctx, query, deviceID)
+	return err
 }
